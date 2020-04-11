@@ -1,13 +1,10 @@
-# Fraud detection in credit cards based on binary classification and existing PCA-transformed dataset
+# Fraud detection in credit cards (binary classification)
 
 | ML.NET version | API type          | Status                        | App Type    | Data type | Scenario            | ML Task                   | Algorithms                  |
 |----------------|-------------------|-------------------------------|-------------|-----------|---------------------|---------------------------|-----------------------------|
-| v1.0.0-preview           | Dynamic API | Up-to-date | Two console apps | .csv file | Fraud Detection | Two-class classification | FastTree Binary Classification |
+| v1.4           | Dynamic API | Up-to-date | Two console apps | .csv file | Fraud Detection | Two-class classification | FastTree Binary Classification |
 
 In this introductory sample, you'll see how to use ML.NET to predict a credit card fraud. In the world of machine learning, this type of prediction is known as binary classification.
-
-## API version: Dynamic and Estimators-based API
-It is important to note that this sample uses the dynamic API with Estimators.
 
 ## Problem
 This problem is centered around predicting if credit card transaction (with its related info/variables) is a fraud or no. 
@@ -34,7 +31,9 @@ More details on current and past projects on related topics are available on htt
 
 ## ML Task - [Binary Classification](https://en.wikipedia.org/wiki/Binary_classification)
 
-Binary or binomial classification is the task of classifying the elements of a given set into two groups (predicting which group each one belongs to) on the basis of a classification rule. Contexts requiring a decision as to whether or not an item has some qualitative property, some specified characteristic
+Binary or binomial classification is the task of classifying the elements of a given set into two groups (predicting which group each one belongs to) on the basis of a classification rule. Contexts requiring a decision as to whether or not an item has some qualitative property, some specified characteristic.
+
+If you would like to learn how to detect fraud using anomaly detection, visit the [Anomaly Detection Credit Card Fraud Detection sample](../AnomalyDetection_CreditCardFraudDetection).
   
 ## Solution
 
@@ -70,13 +69,9 @@ The initial code is similar to the following:
 
 [...]
 
-//Load the original single dataset
-    IDataView originalFullData = mlContext.Data.LoadFromTextFile<TransactionObservation>(fullDataSetFilePath, separatorChar: er: true);
-                 
-    // Split the data 80:20 into train and test sets, train and evaluate.
-    TrainTestData trainTestData = mlContext.Data.TrainTestSplit(originalFullData, testFraction: 0.2, seed: 1);
-    IDataView trainData = trainTestData.TrainSet;
-    IDataView testData = trainTestData.TestSet;
+// Load Datasets
+IDataView trainingDataView = mlContext.Data.LoadFromTextFile<TransactionObservation>(trainDataSetFilePath, separatorChar: ',', hasHeader: true);
+IDataView testDataView = mlContext.Data.LoadFromTextFile<TransactionObservation>(testDataSetFilePath, separatorChar: ',', hasHeader: true);
 
     
 [...]
@@ -108,14 +103,14 @@ The initial code is similar to the following:
 ### 2. Train model
 Training the model is a process of running the chosen algorithm on a training data (with known fraud values) to tune the parameters of the model. It is implemented in the `Fit()` method from the Estimator object.
 
-To perform training you need to call the `Fit()` method while providing the training dataset (`trainData.csv`) in a DataView object.
+To perform training you need to call the `Fit()` method by passing `trainingDataView` object.
 
 `````csharp    
-    ITransformer model = pipeline.Fit(_trainData);
+    ITransformer model = pipeline.Fit(trainingDataView);
 `````
 
 ### 3. Evaluate model
-We need this step to conclude how accurate our model is. To do so, the model from the previous step is run against another dataset that was not used in training (`testData.csv`). 
+We need this step to conclude how accurate our model is. To do so, the model from the previous step is run against another dataset that was not used in training (`testDataView`). 
 
 `Evaluate()` compares the predicted values for the test dataset and produces various metrics, such as accuracy, you can explore.
 

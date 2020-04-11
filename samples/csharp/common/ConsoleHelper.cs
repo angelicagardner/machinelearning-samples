@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Microsoft.ML.Data;
 using Microsoft.ML;
 using static Microsoft.ML.TrainCatalogBase;
+using System.Diagnostics;
 
 namespace Common
 {
@@ -52,6 +53,16 @@ namespace Common
             Console.WriteLine($"*       PositiveRecall:  {metrics.PositiveRecall:#.##}");
             Console.WriteLine($"*       NegativePrecision:  {metrics.NegativePrecision:#.##}");
             Console.WriteLine($"*       NegativeRecall:  {metrics.NegativeRecall:P2}");
+            Console.WriteLine($"************************************************************");
+        }
+
+        public static void PrintAnomalyDetectionMetrics(string name, AnomalyDetectionMetrics metrics)
+        {
+            Console.WriteLine($"************************************************************");
+            Console.WriteLine($"*       Metrics for {name} anomaly detection model      ");
+            Console.WriteLine($"*-----------------------------------------------------------");
+            Console.WriteLine($"*       Area Under ROC Curve:                       {metrics.AreaUnderRocCurve:P2}");
+            Console.WriteLine($"*       Detection rate at false positive count: {metrics.DetectionRateAtFalsePositiveCount}");
             Console.WriteLine($"************************************************************");
         }
 
@@ -169,6 +180,8 @@ namespace Common
             }
         }
 
+        [Conditional("DEBUG")]
+        // This method using 'DebuggerExtensions.Preview()' should only be used when debugging/developing, not for release/production trainings
         public static void PeekDataViewInConsole(MLContext mlContext, IDataView dataView, IEstimator<ITransformer> pipeline, int numberOfRows = 4)
         {
             string msg = string.Format("Peek data in DataView: Showing {0} rows with the columns", numberOfRows.ToString());
@@ -194,8 +207,10 @@ namespace Common
                 Console.WriteLine(lineToPrint + "\n");
             }
         }
-      
-        public static List<float[]> PeekVectorColumnDataInConsole(MLContext mlContext, string columnName, IDataView dataView, IEstimator<ITransformer> pipeline, int numberOfRows = 4)
+
+        [Conditional("DEBUG")]
+        // This method using 'DebuggerExtensions.Preview()' should only be used when debugging/developing, not for release/production trainings
+        public static void PeekVectorColumnDataInConsole(MLContext mlContext, string columnName, IDataView dataView, IEstimator<ITransformer> pipeline, int numberOfRows = 4)
         {
             string msg = string.Format("Peek data in DataView: : Show {0} rows with just the '{1}' column", numberOfRows, columnName );
             ConsoleWriteHeader(msg);
@@ -208,16 +223,22 @@ namespace Common
                                                         .Take(numberOfRows).ToList();
 
             // print to console the peeked rows
+
+            int currentRow = 0;
             someColumnData.ForEach(row => {
+                                            currentRow++;
                                             String concatColumn = String.Empty;
                                             foreach (float f in row)
                                             {
                                                 concatColumn += f.ToString();                                              
                                             }
-                                            Console.WriteLine(concatColumn);
-                                          });
 
-            return someColumnData;
+                                            Console.WriteLine();
+                                            string rowMsg = string.Format("**** Row {0} with '{1}' field value ****", currentRow, columnName);
+                                            Console.WriteLine(rowMsg);
+                                            Console.WriteLine(concatColumn);
+                                            Console.WriteLine();
+                                          });
         }
 
         public static void ConsoleWriteHeader(params string[] lines)
